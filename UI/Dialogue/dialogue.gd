@@ -56,10 +56,6 @@ var talkSound = "res://assets/audio/sfx/Dialogue/DialogueRegular.wav" ## The tal
 const TEXTSPEED = (1.0/60.0) * 5.0
 const TEXTSPEEDFAST = (1.0/60.0)
 
-func _ready():
-	if backgroundShade == true:
-		animationShade.play("Initial")
-
 func _init():
 	# Define the built-in characters
 	# If you wish to add more characters, set them up here!
@@ -75,8 +71,19 @@ func _init():
 	addSpeaker("Tails", 0, 1, "Left", "Right")
 	addDialogue("Testing 1!", 3)
 	addDialogue("Testing 2!")
-	addSpeaker("Sonic", 0, 1, "Right", "Left")
-	addDialogue("This text is really long and boring...")
+	addSpeaker("Sonic", 0, 0, "Right", "Left", false)
+	addSpeaker("Knuckles", 1, 2, "Left", "Right")
+	addDialogue("This text is really long and boring...", 1)
+
+func _ready():
+	if backgroundShade == true:
+		animationShade.play("Initial")
+	
+	# Set the initial box style.
+	for dialogueValue in dialogueList.size():
+		if dialogueList[dialogueValue - 1][0] == "Dialogue":
+			dialogueBox.texture.region.position.y = 48 * dialogueList[dialogueValue - 1][1].boxStyle
+			break
 
 func _physics_process(delta):
 	# Keep refreshing until the first bit of dialogue appears.
@@ -130,9 +137,9 @@ func setUpDialogue():
 		if backgroundShade:
 			animationShade.play("Exiting")
 	else:
-		# This accounts for when we have more than one animation going.
-		var animationPlaying = true
-		while animationPlaying == true:
+		# This accounts for when we have more than one dialogue entity going.
+		var moreDialogue = true
+		while moreDialogue == true:
 			# Let's check if we have dialogue or a speaker change/addition/removal.
 			if dialogueList[0][0] == "Dialogue":
 				# Get the text currently in the box to disappear.
@@ -140,14 +147,16 @@ func setUpDialogue():
 				# Set the textbox style and dialogue.
 				dialogueBox.texture.region.position.y = 48 * dialogueList[0][1].boxStyle
 				currentDialogue = dialogueList[0][1].dialogue
-				animationPlaying = false
+				moreDialogue = false
 			elif dialogueList[0][0] == "addSpeaker":
-				# Add our speaker.
-				addSpeakerDefinition(dialogueList[0][1], dialogueList[0][2], dialogueList[0][3], dialogueList[0][4], dialogueList[0][5], dialogueList[0][6])
-				if dialogueList[0][6] == false:
-					dialogueList.remove_at(0)
+				var options = [dialogueList[0][1], dialogueList[0][2], dialogueList[0][3], dialogueList[0][4], dialogueList[0][5], dialogueList[0][6]]
+				addSpeakerDefinition(options[0], options[1], options[2], options[3], options[4], options[5])
+				if options[5] == false:
+					print(dialogueList[0])
+				elif animationPlaying == false:
+					moreDialogue = false
 				else:
-					animationPlaying = false
+					pass
 	
 
 # Adds a DialogueEntry class that stores all the info of a single piece of dialogue
@@ -195,6 +204,7 @@ func addSpeaker(setName: String, setPose, setPosition: int, setEnterMode, setDir
 
 # Adds a Speaker to the current scene.
 func addSpeakerDefinition(setName: String, setPose, setPosition: int, setEnterMode, setDirection, setDelay: bool = true):
+	animationPlaying = true
 	# First, check if this speaker actually exists.
 	var speakerIndex
 	for speakerValue in speakerMasterList.size():
@@ -277,6 +287,7 @@ func addSpeakerDefinition(setName: String, setPose, setPosition: int, setEnterMo
 		tween.set_trans(Tween.TRANS_EXPO)
 		tween.set_ease(Tween.EASE_OUT)
 		tween.tween_property(speaker, "position", Vector2(72, speaker.position.y), 40.0/60.0)
+		tween.tween_callback(changeAnimationPlaying)
 		delayTimer = 40.0/60.0
 	else:
 		speaker.position.x = 72
@@ -284,6 +295,10 @@ func addSpeakerDefinition(setName: String, setPose, setPosition: int, setEnterMo
 	# Finally, let the program know it's ready to move on!
 	setUpDialogue()
 	
+# Dedicated function to change this value to false.
+# For tweens to do this after they end... why...?
+func changeAnimationPlaying():
+	animationPlaying = false
 
 # Changes the speaker's pose and/or direction.
 func changeSpeakerPose(setName: String, setChange: int, setPose: int = -1, setDirection: int = -1):
