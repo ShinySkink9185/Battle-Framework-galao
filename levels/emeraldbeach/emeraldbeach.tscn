@@ -19,7 +19,6 @@
 [ext_resource type="Texture2D" uid="uid://murpq1ouoeto" path="res://levels/emeraldbeach/eb10.bmp" id="17_7ffvt"]
 [ext_resource type="Texture2D" uid="uid://c5yq2pv3fnuwf" path="res://levels/emeraldbeach/eb11.bmp" id="18_k3ces"]
 [ext_resource type="Texture2D" uid="uid://djqw13ye3bcq0" path="res://levels/emeraldbeach/eb12.bmp" id="19_flfp5"]
-[ext_resource type="PackedScene" uid="uid://cyrtiemawvckt" path="res://UI/Dialogue/dialogue.tscn" id="20_424l1"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_safpt"]
 
@@ -911,5 +910,3 @@ shape = SubResource("ConcavePolygonShape3D_pb8y7")
 [node name="AnimationPlayer" type="AnimationPlayer" parent="EmeraldBeach" unique_id=1982161007]
 libraries/ = SubResource("AnimationLibrary_cg1b4")
 autoplay = &"Animation"
-
-[node name="Dialogue" parent="." unique_id=557759016 instance=ExtResource("20_424l1")]
