@@ -9,6 +9,10 @@ extends Control
 ## Created by ShinySkink9185, being borrowed from Klonoa Project Test.
 ## I hope Mobi doesn't mind me shilling it...!
 
+# Signal for when the dialogue is completed.
+# Suggested by guarapicci.
+signal dialogue_ended
+
 # Labels for text.
 @onready var textLabel = $CanvasLayer/Text
 @onready var animationTextbox = $AnimationPlayerTextbox
@@ -69,14 +73,20 @@ func _init():
 	defineSpeaker("Sonic", "res://characters/sonic/sprites/SonicDialoguePortraits.png", ["Standard", "Thumbs Up", "Confused", "Determined"])
 	defineSpeaker("Tails", "res://characters/tails/sprites/TailsDialoguePortraits.png", ["Standard", "Worried", "Determined"])
 	defineSpeaker("Knuckles", "res://characters/knuckles/sprites/KnucklesDialoguePortraits.png", ["Standard", "Concerned", "Determined"])
-	defineSpeaker("Emerl", "res://characters/emerl/sprites/EmerlDialoguePortraits.png", ["Standard", "Interested", "Powering Up", "Powering Up (Override)"])
+	defineSpeaker("Shadow", "res://characters/shadow/sprites/ShadowDialoguePortraits.png", ["Standard", "Intrigued", "Determined"])
+	defineSpeaker("Rouge", "res://characters/rouge/sprites/RougeDialoguePortraits.png", ["Standard", "Disgusted"])
+	defineSpeaker("Amy", "res://characters/amy/sprites/AmyDialoguePortraits.png", ["Standard", "Angry", "Happy", "Concerned"])
+	defineSpeaker("Cream", "res://characters/cream/sprites/CreamDialoguePortraits.png", ["Standard", "Sad", "Excited"])
+	defineSpeaker("Chaos Gamma", "res://characters/chaos_gamma/sprites/ChaosGammaDialoguePortraits.png", ["Standard", "Identifying", "Standard (Guard Robo)"])
+	defineSpeaker("Chaos", "res://characters/chaos/sprites/ChaosDialoguePortraits.png", ["Standard"])
+	defineSpeaker("Emerl", "res://characters/emerl/sprites/EmerlDialoguePortraits.png", ["Standard", "Intrigued", "Powering Up", "Awakened", "Intrigued (Phi)"])
 	defineSpeaker("Eggman", "res://characters/eggman/sprites/EggmanDialoguePortraits.png", ["Standard", "Angry"])
 	
 	# test, delete once over with
-	addSpeaker("Tails", 0, 1, "Left", "Right")
+	addSpeaker("Tails", 4, 1, "Left", "Right")
 	addDialogue("Testing 1!", 3)
 	addDialogue("Hey, we need help with this dialogue set!")
-	addSpeaker("Knuckles", 1, "Right", "Fade", "Left")
+	addSpeaker("Knuckles", 1, "Left", "Fade", "Left", false)
 	addSpeaker("Sonic", 0, "Right", "Left", "Right")
 	changeSpeaker("Sonic", 2, "Left")
 	addDialogue("Too bad Emerl's a goner.")
@@ -343,7 +353,7 @@ func addSpeakerDefinition(setName: String, setPose, setPosition: int, setEnterMo
 		speakerFinalPosition = speakerInternalPosition.MIDDLE
 		speakerList[speakerInternalIndex][1] = speakerInternalPosition.MIDDLE
 	elif setPosition == speakerPosition.LEFT:
-		# TODO: replace this with possibilities
+		# Set all the possibilities of the external speakers.
 		match speakerCount:
 			3:
 				# Check which speaker we've gotta move.
@@ -577,11 +587,10 @@ func _on_animation_player_animation_finished(anim_name):
 	if anim_name == "Initial":
 		animationTextbox.play("Idle")
 	elif anim_name == "Exiting":
+		dialogue_ended.emit()
 		queue_free()
 
 # Animations for the background shade.
 func _on_animation_player_shade_animation_finished(anim_name):
 	if anim_name == "Initial":
 		animationShade.play("Idle")
-	elif anim_name == "Exiting":
-		queue_free()
