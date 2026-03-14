@@ -69,12 +69,14 @@ func _init():
 	defineSpeaker("Sonic", "res://characters/sonic/sprites/SonicDialoguePortraits.png", ["Standard", "Thumbs Up", "Confused", "Determined"])
 	defineSpeaker("Tails", "res://characters/tails/sprites/TailsDialoguePortraits.png", ["Standard", "Worried", "Determined"])
 	defineSpeaker("Knuckles", "res://characters/knuckles/sprites/KnucklesDialoguePortraits.png", ["Standard", "Concerned", "Determined"])
+	defineSpeaker("Emerl", "res://characters/emerl/sprites/EmerlDialoguePortraits.png", ["Standard", "Interested", "Powering Up", "Powering Up (Override)"])
+	defineSpeaker("Eggman", "res://characters/eggman/sprites/EggmanDialoguePortraits.png", ["Standard", "Angry"])
 	
 	# test, delete once over with
 	addSpeaker("Tails", 0, 1, "Left", "Right")
 	addDialogue("Testing 1!", 3)
-	addDialogue("Testing 2!")
-	addSpeaker("Knuckles", 1, "Right", "Fade", "Right", false)
+	addDialogue("Hey, we need help with this dialogue set!")
+	addSpeaker("Knuckles", 1, "Right", "Fade", "Left")
 	addSpeaker("Sonic", 0, "Right", "Left", "Right")
 	changeSpeaker("Sonic", 2, "Left")
 	addDialogue("Too bad Emerl's a goner.")
@@ -327,9 +329,16 @@ func addSpeakerDefinition(setName: String, setPose, setPosition: int, setEnterMo
 	# Set the speaker we want to move.
 	var speakerListIndex = 0
 	
-	# TODO: When a singular speaker is in the middle and you add 2 Speakers without delay,
-	# to the left and right sides, the middle speaker will shift to a direction, but then
-	# return back. Minor issue, but a fix would be nice.
+	# Fixes an edge case.
+	# When two speakers are added, and another speaker is already there...
+	# IF that speaker doesn't move, no delay.
+	# ELSE, do add delay.
+	if setMovingEdgeCase == true:
+		for speakerValue in speakerList.size():
+			if speakerList[speakerValue][0] != setName and speakerList[speakerValue] != null:
+				edgeCaseStoredPosition = speakerList.slice(speakerValue, speakerValue + 1)
+				break
+	
 	if speakerCount <= 1:
 		speakerFinalPosition = speakerInternalPosition.MIDDLE
 		speakerList[speakerInternalIndex][1] = speakerInternalPosition.MIDDLE
@@ -399,10 +408,28 @@ func addSpeakerDefinition(setName: String, setPose, setPosition: int, setEnterMo
 		if afterMovingEdgeCase == false and speakerCount > 1:
 			tween.tween_interval(40.0/60.0)
 		elif afterMovingEdgeCase == true:
+			# Check if the speaker stays where they are.
+			# If they do, then no delay is done.
+			# TODO: Fix an edge case that happens here.
+			# At this point, I may just have to pass fixing this onto another programmer...
+			# If you're a programmer who wants to fix this, here's what you need to know.
+			# Say Tails is the only speaker on the board. Knuckles and Sonic are about to enter,
+			# both at time same time (Knuckles has delay off, you see.)
+			# If Knuckles enters to the left and Sonic enters to the right,
+			# leaving Tails still in the middle, then there should be no delay between the characters moving.
+			# Else, if Knuckles and Sonic were to enter to either the right or left,
+			# making Tails get pushed to the left or right respectively,
+			# then Tails should get pushed first, followed by the delay of (40.0/60.0),
+			# then have the two other characters join at the same time.
+			# Thank you - you're saving a load off my back!
+			var speakerStaying = false
 			for speakerValue in speakerList.size():
+				print(edgeCaseStoredPosition)
 				if edgeCaseStoredPosition == speakerList[speakerValue]:
-					tween.tween_interval(40.0/60.0)
+					speakerStaying = true
 					break
+			if speakerStaying == false:
+				tween.tween_interval(40.0/60.0)
 	
 		# Set where our speaker initially is depending on our mode, and where they're going.
 		if (setEnterMode is int and setEnterMode == speakerEnterMode.LEFT) or (setEnterMode is String and setEnterMode.to_upper() == "LEFT"):
@@ -425,14 +452,8 @@ func addSpeakerDefinition(setName: String, setPose, setPosition: int, setEnterMo
 			tween.tween_property(speaker, "position:x", speakerFinalPosition, 0)
 		
 		tween.tween_callback(changeAnimationPlaying)
+		
 	else:
-		# Find out the position of the one speaker on the board (if any).
-		# TODO: that
-		if speakerCount == 2:
-			for speakerValue in speakerList.size():
-				if speakerList[speakerValue][0] != setName and speakerList[speakerValue] != null:
-					edgeCaseStoredPosition = speakerList[speakerValue]
-					break
 		# Set our edge cases for two Speakers at once.
 		if setMovingEdgeCase == true:
 			afterMovingEdgeCase = true
@@ -539,7 +560,7 @@ func changeSpeakerDefinition(setName: String, setPose = -1, setDirection = -1, s
 	# Set the pose coordinates.
 	tween.tween_property(speaker, "texture:region:position:x", (poseIndex * 96), 0)
 	
-	# Finish off the flip1
+	# Finish off the flip!
 	tween.set_ease(Tween.EASE_OUT)
 	tween.tween_property(speaker, "scale:x", 1, 10.0/60.0)
 	tween.tween_callback(changeAnimationPlaying)
