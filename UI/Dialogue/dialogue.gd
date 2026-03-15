@@ -69,7 +69,6 @@ func _init():
 	# Otherwise, you might have to define them every time you want to use them
 	# in a scene, and that's too slow...
 	# TODO: find out what dialogue sounds each character has
-	# TODO: add more characters
 	defineSpeaker("Sonic", "res://characters/sonic/sprites/SonicDialoguePortraits.png", ["Standard", "Thumbs Up", "Confused", "Determined"])
 	defineSpeaker("Tails", "res://characters/tails/sprites/TailsDialoguePortraits.png", ["Standard", "Worried", "Determined"])
 	defineSpeaker("Knuckles", "res://characters/knuckles/sprites/KnucklesDialoguePortraits.png", ["Standard", "Concerned", "Determined"])
